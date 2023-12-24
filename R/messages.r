@@ -1,22 +1,22 @@
 #' Log messages
-#' 
+#'
 #' Handlers for showing messages, warnings and errors.
 #' These functions are useful as many of the log messages
 #' are re-used in the code. `msg()` is used for ordinary messages,
 #' `wrn()` for warnings and `err()` for throwing an error and
 #' interrupting the code from further evaulation.
-#' 
+#'
 #' @param n message code. The number used must exist in table available in the code.
 #' @param ... arguments passed on to `sprintf()`.
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' msg(3, "foo")
 #' }
-#' 
+#'
 #' @rdname messages
 msg <- function(n, ...) {
-  
+
   # Message codes are available in the table below;
   # some numbers in between have been removed since they aren't used anymore.
   str <- sprintf(switch(
@@ -46,11 +46,11 @@ msg <- function(n, ...) {
     "26"  = "All column names must be unique",
     "27"  = "No variable name provided. Expecting a name string during attpmtion to save vector to database",
     "28"  = "Time limit exceeded. The database was blocked by another precess."
-    
+
   ), ...)
-  
+
   if (is.null(str)) err(0)
-  
+
   switch(
     as.character(match.call()[[1]]),  # name of calling function
     "msg" = message(str),

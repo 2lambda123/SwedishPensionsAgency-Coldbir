@@ -17,10 +17,10 @@ SELECTORa <- paste("test",1:2,sep="")
 YEARS     <- rep(2003:2005)
 MONTHS    <- 1:12
 
-testSet <- 
-  expand.grid(    var =  VARS , 
-                  sel = SELECTORa, 
-                  y = YEARS, 
+testSet <-
+  expand.grid(    var =  VARS ,
+                  sel = SELECTORa,
+                  y = YEARS,
                   m = MONTHS,
                   value = 1:size,
                   stringsAsFactors = F)
@@ -34,7 +34,7 @@ testSet[,value := as.integer(round(rnorm(.N)*10,0))]
 
 # Prepare a "WIDE" data set
 x <- copy(testSet)
-x[, var_sel_y_m := 
+x[, var_sel_y_m :=
     apply(testSet[,
                   .(var, sel , y = as.character(y), m = as.character(m))],
                   1, FUN=paste, collapse = "_")
@@ -55,12 +55,12 @@ test_that("initialize database", {
   db <- cdb(path, read_only = T)
   expect_equal(path, db$path)
   expect_true(db$read_only)
-  
+
   db <- cdb(path, read_only = F)
-  expect_false(db$read_only) 
-  
+  expect_false(db$read_only)
+
   db <- cdb(path)
-  expect_false(db$read_only)  
+  expect_false(db$read_only)
 })
 
 context("FILE HANDLING")
@@ -69,7 +69,7 @@ test_that("saving & reading data.table", {
   db <- cdb(path, read_only = F)
   cat("writing:", paste(round(system.time(db[] <- testSet)[1:3],3),"s"),"\n")
   cat("reading:", paste(round(system.time(x <- db[] )[1:3],3),"s"),"\n")
-  
+
   x[,var := as.character(var)][,sel := as.character(sel)] # dtrings are savet as factors
   setcolorder(x,names(testSet))  # always alphabetical order
   expect_equal(x,testSet)
@@ -77,24 +77,24 @@ test_that("saving & reading data.table", {
 })
 
 test_that("LONG data reading and manupilating another instance", {
-  db1   <- cdb(path, read_only = F)  # two 
+  db1   <- cdb(path, read_only = F)  # two
   db2   <- cdb(path, read_only = F)  # instances
-  
+
   cat("writing:", paste(round(system.time(db1[] <- testSet)[1:3],3),"s"),"\n")
-  
+
   cat("reading1:", paste(round(system.time(x <- db1[])[1:3],3),"s"),"\n")
   cat("reading2:", paste(round(system.time(y <- db2[] )[1:3],3),"s"),"\n")
-  expect_equal(x, y)  
-  
+  expect_equal(x, y)
+
   db1["m"] <- NULL
   expect_null(db2["m"])
-  
+
   expect_equal(db2[],db1[]) # equal dure to syncronisation
-  
+
   db1["m"] <- testSet$m
-  
+
   expect_equal(db1["m"], db2["m"]) # equal dure to syncronisation
-  
+
   db1[] <- NULL
   db2[] <- NULL # not necessary
   expect_null(db2[])
@@ -102,31 +102,31 @@ test_that("LONG data reading and manupilating another instance", {
 
 
 test_that("WIDE data reading and manupilating another instance", {
-  db1   <- cdb(path, read_only = F)  # two 
+  db1   <- cdb(path, read_only = F)  # two
   db2   <- cdb(path, read_only = F)  # instances
-  
+
   cat("writing:",  paste(round(system.time(db1[] <-  testSetWide)[1:3],3),"s"),"\n")
-  
+
   T <- round(system.time(x <- db2["*Var*", .("test1", 2001,._)])[1:3],3)
   cat("reading ", ncol(x) ,"cols T = ", paste(T, " s",sep=""),"\n")
   # str(x)
 
   T <- round(system.time(x <- db2["*Var*", .(._, ._,1:10)])[1:3],3)
-  cat("reading ", ncol(x) , "cols T = ", paste(T, " s",sep=""),"\n")  
-  
+  cat("reading ", ncol(x) , "cols T = ", paste(T, " s",sep=""),"\n")
+
   T <- round(system.time(x <- db2[._, ._])[1:3],3)
-  cat("reading ", ncol(x) , "cols T = ", paste(T, " s",sep=""),"\n")  
-  
+  cat("reading ", ncol(x) , "cols T = ", paste(T, " s",sep=""),"\n")
+
   db2[] <- NULL
 })
 
 
 
 test_that("wild cards test", {
-    db1   <- cdb(path, read_only = F) 
+    db1   <- cdb(path, read_only = F)
     db1[]   <- testSetWide
     T <- round(system.time(x <- db1["*V*",.(._, ._, 9)])[1:3],3)
-    cat("reading ", ncol(x) , "cols",db1$n_row, "rows ", "T =", paste(T, " s",sep=""),"\n") 
+    cat("reading ", ncol(x) , "cols",db1$n_row, "rows ", "T =", paste(T, " s",sep=""),"\n")
     db1[] <- NULL
 })
 
@@ -197,7 +197,7 @@ if(FALSE)
 
   table(as.integer(MASS::survey[,"Sex"]))
   table(db["Sex"][[1]])
-  
+
   expect_equal(db[][,names(MASS::survey),with=FALSE],MASS::survey)
 
 levels(db["Sex"][[1]])
