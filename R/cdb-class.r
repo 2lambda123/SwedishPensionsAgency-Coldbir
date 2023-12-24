@@ -159,10 +159,14 @@ cdb <- setRefClass(
     get_doc = function(name) {
       
       f <- file_path(name, .self$path, create_dir = F, file_name = F, data_folder = F)
-      if (is.na(f)) stp(3, .self$path)
+      if (is.na(f)) {
+        wrn(3, .self$path); return(NULL)
+      }
       
       f <- file.path(f, .doc_file)
-      if (!file.exists(f)) stp(4, .self$path, name)
+      if (!file.exists(f)) {
+        wrn(4, .self$path, name); return(NULL)
+      }
       
       con <- file(f, "r", encoding = .self$encoding)
       lns <- readLines(con, n = -1, warn = F)
@@ -279,7 +283,7 @@ cdb <- setRefClass(
       
       header_len <- readBin(bin_file, integer(), n = 1, size = 8)
       header_str <- rawToChar(readBin(bin_file, raw(), n = header_len))
-      header <- fromJSON(header_str, simplifyWithNames = F)
+      header <- RJSONIO::fromJSON(header_str, simplifyWithNames = F)
       
       vector_len <- readBin(bin_file, integer(), n = 1, size = 8)
       
@@ -297,7 +301,6 @@ cdb <- setRefClass(
       # Prepare data depending on vector type
       
       ## integer or factor
-      
       if (header$type == "integer") {
         
         if (!is.na(na)) x[is.na(x)] <- as.integer(na)
@@ -326,7 +329,7 @@ cdb <- setRefClass(
           # Convert to factor variable
           levels(x) <- levels
           class(x) <- "factor"
-
+          
         } else {
           
           # This is outside the `if (!is.null(df))` due to the 
@@ -527,7 +530,7 @@ cdb <- setRefClass(
           # Add attributes
           header$attributes <- attrib
             
-          header_raw <- charToRaw(toJSON(header, digits = 50))
+          header_raw <- charToRaw(RJSONIO::toJSON(header, digits = 50))
           header_len <- length(header_raw)
           
           # Removes attributes from vector
